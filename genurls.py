@@ -7,9 +7,9 @@ import urlparse
 from bs4 import BeautifulSoup
 from pprint import pprint
 
-locations = set(['CA', 'MX', 'US'])
+locations = set(['MX', 'US'])
 protos = set(['http', 'ftp'])
-protosre = '|'.join(['^' + i + '://' for i in protos])
+protosre = '|'.join(['^' + i + '://' for i in sorted(protos, key=len, reverse=True)])
 links = set()
 paths = ['releases/23/Workstation/i386/iso/Fedora-Workstation-netinst-i386-23.iso',
       'releases/23/Workstation/i386/iso/Fedora-Live-Workstation-i686-23-10.iso',
@@ -31,9 +31,11 @@ for trs in soup.find_all('tr'):
                     for path in paths:
                         links.add(urlparse.urljoin(link.get('href') + '/', path))
 
-shell = ['#!/usr/bin/bash']
-wget = '''echo "%s"
-wget -O /dev/null '%s'\n'''
+shell = ['#!/usr/bin/bash', 'while true', 'do']
+wget = '''date
+timeout -s SIGINT -t 900 wget -O /dev/null '%s' 
+'''
 for link in links:
-    shell.append(wget % (link, link))
+    shell.append(wget % (link))
+shell.append('done')
 print('\n'.join(shell))
