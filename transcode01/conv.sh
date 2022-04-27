@@ -10,7 +10,7 @@ sub2="`basename "$i" .ts`.srt"
 
 #constants
 crf=26
-preset=medium
+preset=slow
 
 #For some reason, if a filename has a ', then it movie=... won't work
 echo "$i" | grep \'
@@ -33,11 +33,13 @@ retVal=$?
 if [ $retVal -eq 1 ]; then
 #echo "not interlaced:"
 #echo "$i"
-nice -n19 ffmpeg -i "$i" -i "$sub2" -i "$sub" -c:v libx265 -crf ${crf} -preset ${preset} -map 0 -c:a copy -map 1 -map 2 -c:s copy -metadata:s:s language=eng "$new"
+#nice -n19 ffmpeg -i "$i" -i "$sub2" -i "$sub" -c:v libx265 -crf ${crf} -preset ${preset} -map 0 -c:a copy -map 1 -map 2 -c:s copy -metadata:s:s language=eng "$new"
+nice -n19 ffmpeg -i "$i" -i "$sub2" -i "$sub" -pix_fmt yuv420p10le -c:v libx265 -crf ${crf} -preset ${preset} -map 0 -c:a copy -map 1 -map 2 -c:s copy -metadata:s:s language=eng "$new"
 else
 #echo "interlaced"
 #echo "$i"
-nice -n19 ffmpeg -i "$i" -i "$sub2" -i "$sub" -vf yadif -c:v libx265 -crf ${crf} -preset ${preset} -map 0 -c:a copy -map 1 -map 2 -c:s copy -metadata:s:s language=eng "$new"
+#nice -n19 ffmpeg -i "$i" -i "$sub2" -i "$sub" -vf yadif -c:v libx265 -crf ${crf} -preset ${preset} -map 0 -c:a copy -map 1 -map 2 -c:s copy -metadata:s:s language=eng "$new"
+nice -n19 ffmpeg -i "$i" -i "$sub2" -i "$sub" -vf yadif -pix_fmt yuv420p10le -c:v libx265 -crf ${crf} -preset ${preset} -map 0 -c:a copy -map 1 -map 2 -c:s copy -metadata:s:s language=eng "$new"
 #ffmpeg -i a.ts -i output.srt -vf yadif -c:v libx265 -crf 26 -preset medium -map 0 -c:a copy -map 1 -c:s copy o.mkv
 fi
 #echo ""
