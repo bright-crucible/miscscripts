@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 #https://stackoverflow.com/questions/3169910/can-ffmpeg-extract-closed-caption-data
 #https://www.reddit.com/r/PleX/comments/hyisuz/how_can_i_update_the_audio_language_from_unknown/
+if [ -f /tmp/tc ]; then
+echo "Transcode in progress" >&2
+exit 1
+else
 touch /tmp/tc
+fi
 for i in *.ts;
 do
 new="`basename "$i" .ts`.mkv"
