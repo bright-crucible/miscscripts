@@ -27,26 +27,62 @@ else
 bad="$i"
 fi
 nice -n19 ffmpeg -f lavfi -i "movie=$bad[out+subcc]" -map 0:1 "$sub"
-nice -n19 ffmpeg -f lavfi -i "movie=$bad[out+subcc]" -map 0:1 "$sub2"
+#nice -n19 ffmpeg -f lavfi -i "movie=$bad[out+subcc]" -map 0:1 "$sub2"
+nice -n19 ffmpeg -i "$sub" "$sub2"
+nice -n19 ./fix_nbs.sh "$sub2"
 if [ $badname -eq 0 ]; then
 rm temp.ts
 fi
 
-#mediainfo "$i" | grep -i interlaced
 mediainfo "$i" | egrep "Scan type\s+: Interlaced"
 retVal=$?
 if [ $retVal -eq 1 ]; then
 #echo "not interlaced:"
 #echo "$i"
+#8bit:
 #nice -n19 ffmpeg -i "$i" -i "$sub2" -i "$sub" -c:v libx265 -crf ${crf} -preset ${preset} -map 0 -c:a copy -map 1 -map 2 -c:s copy -metadata:s:s language=eng "$new"
-nice -n19 ffmpeg -i "$i" -i "$sub2" -i "$sub" -pix_fmt yuv420p10le -c:v libx265 -crf ${crf} -preset ${preset} -map 0 -c:a copy -map 1 -map 2 -c:s copy -metadata:s:s language=eng "$new"
+#10bit:
+#nice -n19 ffmpeg -i "$i" -i "$sub2" -i "$sub" -pix_fmt yuv420p10le -c:v libx265 -crf ${crf} -preset ${preset} -map 0 -c:a copy -map 1 -map 2 -c:s copy -metadata:s:s language=eng "$new"
+nice -n19 \
+    ffmpeg \
+        -i "$i" \
+        -i "$sub2" \
+        -i "$sub" \
+        -pix_fmt yuv420p10le \
+        -map 0:v:0 \
+        -map 0:a:0 \
+        -map 1 \
+        -map 2 \
+        -c:v:0 libx265 -crf ${crf} -preset ${preset} \
+        -c:a:0 copy \
+        -c:s:0 copy \
+        -c:s:1 copy \
+        -metadata:s:s language=eng \
+        "$new"
 else
 #echo "interlaced"
 #echo "$i"
+#8bit:
 #nice -n19 ffmpeg -i "$i" -i "$sub2" -i "$sub" -vf yadif -c:v libx265 -crf ${crf} -preset ${preset} -map 0 -c:a copy -map 1 -map 2 -c:s copy -metadata:s:s language=eng "$new"
-nice -n19 ffmpeg -i "$i" -i "$sub2" -i "$sub" -vf yadif -pix_fmt yuv420p10le -c:v libx265 -crf ${crf} -preset ${preset} -map 0 -c:a copy -map 1 -map 2 -c:s copy -metadata:s:s language=eng "$new"
-#ffmpeg -i a.ts -i output.srt -vf yadif -c:v libx265 -crf 26 -preset medium -map 0 -c:a copy -map 1 -c:s copy o.mkv
+#10bit:
+#nice -n19 ffmpeg -i "$i" -i "$sub2" -i "$sub" -vf yadif -pix_fmt yuv420p10le -c:v libx265 -crf ${crf} -preset ${preset} -map 0 -c:a copy -map 1 -map 2 -c:s copy -metadata:s:s language=eng "$new"
+nice -n 19 \
+    ffmpeg \
+        -i "$i" \
+        -i "$sub2" \
+        -i "$sub" \
+        -vf yadif \
+        -pix_fmt yuv420p10le \
+        -map 0:v:0 \
+        -map 0:a:0 \
+        -map 1 \
+        -map 2 \
+        -c:v:0 libx265 -crf ${crf} -preset ${preset}
+        -c:a:0 copy \
+        -c:s:0 copy \
+        -c:s:1 copy \
+        -metadata:s:s language=eng \
+        "$new"
 fi
-#echo ""
 done
 rm /tmp/tc
